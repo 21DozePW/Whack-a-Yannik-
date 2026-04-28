@@ -2,26 +2,43 @@
   const HOLES = 9;
   const GAME_DURATION = 30;
   const COMBO_WINDOW_MS = 1400;
+  const AUTO_RESTART_SECONDS = 5;
+  const TIME_WARNING = 10;
+  const OLIVER_PROBABILITY = 0.22;
+  const PENALTY = 5;
+  const REACTION_MS = 360;
+
+  const ART = {
+    yannikIdle:      'yannik-smile.png',
+    yannikSurprised: 'yannik-surprised.png',
+    oliverIdle:      'oliver-smile.png',
+    oliverFrown:     'oliver-frown.png',
+  };
 
   const DIFFICULTY = {
-    easy:   { upMin: 900, upMax: 1500, gapMin: 500, gapMax: 1000, multi: 1 },
-    normal: { upMin: 700, upMax: 1200, gapMin: 350, gapMax: 800,  multi: 2 },
-    hard:   { upMin: 500, upMax: 900,  gapMin: 200, gapMax: 500,  multi: 2 },
-    insane: { upMin: 350, upMax: 650,  gapMin: 100, gapMax: 300,  multi: 3 },
+    easy:   { upMin: 900, upMax: 1500, gapMin: 500, gapMax: 1000, multi: 1, oliver: 0.15 },
+    normal: { upMin: 700, upMax: 1200, gapMin: 350, gapMax: 800,  multi: 2, oliver: 0.22 },
+    hard:   { upMin: 500, upMax: 900,  gapMin: 200, gapMax: 500,  multi: 2, oliver: 0.28 },
+    insane: { upMin: 350, upMax: 650,  gapMin: 100, gapMax: 300,  multi: 3, oliver: 0.34 },
   };
 
   const board = document.getElementById('board');
   const scoreEl = document.getElementById('score');
   const timeEl = document.getElementById('time');
+  const timeMetric = timeEl.closest('.metric');
   const bestEl = document.getElementById('best');
   const comboEl = document.getElementById('combo');
   const startBtn = document.getElementById('startBtn');
+  const startBtnLabel = startBtn.querySelector('.btn-label');
+  const quitBtn = document.getElementById('quitBtn');
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
   const overlayMessage = document.getElementById('overlayMessage');
   const finalScoreEl = document.getElementById('finalScore');
   const finalBestEl = document.getElementById('finalBest');
   const playAgainBtn = document.getElementById('playAgainBtn');
+  const cancelAutoBtn = document.getElementById('cancelAutoBtn');
+  const countdownEl = document.getElementById('countdown');
   const segButtons = Array.from(document.querySelectorAll('.seg-btn'));
 
   let holes = [];
@@ -33,23 +50,16 @@
   let running = false;
   let tickTimer = null;
   let scheduleTimer = null;
-  let useMoleImage = true;
+  let countdownTimer = null;
+  let countdownLeft = 0;
   let difficulty = 'normal';
 
   const BEST_KEY = 'whackYannikBest';
   let best = Number(localStorage.getItem(BEST_KEY) || 0);
   bestEl.textContent = best;
 
-  const probe = new Image();
-  probe.onload = () => { useMoleImage = true; refreshMoleArt(); };
-  probe.onerror = () => { useMoleImage = false; refreshMoleArt(); };
-  probe.src = 'mole.png';
-
-  function refreshMoleArt() {
-    document.querySelectorAll('.mole').forEach(m => {
-      m.classList.toggle('fallback', !useMoleImage);
-    });
-  }
+  // Preload character art so reaction swaps are instant
+  Object.values(ART).forEach(src => { const i = new Image(); i.src = src; });
 
   function buildBoard() {
     board.innerHTML = '';
@@ -61,13 +71,31 @@
       hole.setAttribute('role', 'button');
       hole.setAttribute('aria-label', `Hole ${i + 1}`);
 
-      const mole = document.createElement('div');
-      mole.className = 'mole' + (useMoleImage ? '' : ' fallback');
-      hole.appendChild(mole);
+      const character = document.createElement('div');
+      character.className = 'character';
+      character.dataset.kind = 'yannik';
 
+      const img = document.createElement('img');
+      img.className = 'character-img';
+      img.src = ART.yannikIdle;
+      img.alt = '';
+      img.draggable = false;
+      character.appendChild(img);
+
+      hole.appendChild(character);
       hole.addEventListener('pointerdown', (e) => onWhack(e, i));
       board.appendChild(hole);
-      holes.push({ el: hole, mole, up: false, whacked: false, hideTimer: null });
+
+      holes.push({
+        el: hole,
+        character,
+        img,
+        kind: 'yannik',
+        up: false,
+        whacked: false,
+        hideTimer: null,
+        reactionTimer: null,
+      });
     }
   }
 
@@ -75,36 +103,37 @@
     score = v;
     scoreEl.textContent = score;
   }
-
-  function setTime(v) {
-    timeLeft = v;
-    timeEl.textContent = timeLeft;
-  }
-
   function setCombo(v) {
     combo = v;
     comboEl.textContent = `×${combo}`;
   }
+  function setTime(v) {
+    timeLeft = v;
+    timeEl.textContent = timeLeft;
+    if (timeMetric) timeMetric.classList.toggle('warning', timeLeft <= TIME_WARNING);
+  }
 
-  function popUp(idx, durationMs) {
+  function popUp(idx, durationMs, kind) {
     const h = holes[idx];
     if (!h || h.up) return;
     h.up = true;
     h.whacked = false;
+    h.kind = kind;
+    h.character.dataset.kind = kind;
+    h.img.src = kind === 'oliver' ? ART.oliverIdle : ART.yannikIdle;
     h.el.classList.add('up');
-    h.el.classList.remove('whacked');
+    h.el.classList.remove('whacked', 'penalty', 'oliver-active');
+    if (kind === 'oliver') h.el.classList.add('oliver-active');
 
     h.hideTimer = setTimeout(() => {
       if (h.up && !h.whacked) {
         h.up = false;
-        h.el.classList.remove('up');
+        h.el.classList.remove('up', 'oliver-active');
       }
     }, durationMs);
   }
 
-  function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
   function pickHoles(n) {
     const available = holes
@@ -124,7 +153,10 @@
     const cfg = DIFFICULTY[difficulty] || DIFFICULTY.normal;
     const count = randInt(1, cfg.multi);
     const picks = pickHoles(count);
-    picks.forEach(i => popUp(i, randInt(cfg.upMin, cfg.upMax)));
+    picks.forEach(i => {
+      const kind = Math.random() < cfg.oliver ? 'oliver' : 'yannik';
+      popUp(i, randInt(cfg.upMin, cfg.upMax), kind);
+    });
     scheduleTimer = setTimeout(scheduleNext, randInt(cfg.gapMin, cfg.gapMax));
   }
 
@@ -132,11 +164,22 @@
     if (!running) return;
     const h = holes[idx];
     if (!h || !h.up || h.whacked) return;
+
     h.whacked = true;
     h.up = false;
-    h.el.classList.add('whacked');
-    h.el.classList.remove('up');
     if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
+
+    if (h.kind === 'oliver') {
+      handleOliverHit(h);
+    } else {
+      handleYannikHit(h);
+    }
+  }
+
+  function handleYannikHit(h) {
+    h.img.src = ART.yannikSurprised;
+    h.el.classList.add('whacked');
+    h.el.classList.remove('up', 'oliver-active');
 
     const now = performance.now();
     if (now - lastHitAt < COMBO_WINDOW_MS) {
@@ -148,83 +191,157 @@
 
     const points = combo;
     setScore(score + points);
-    spawnPopup(h.el, `+${points}${combo > 1 ? ` ×${combo}` : ''}`);
+    spawnPopup(h.el, `+${points}${combo > 1 ? `  ×${combo}` : ''}`);
 
     if (comboTimer) clearTimeout(comboTimer);
     comboTimer = setTimeout(() => setCombo(1), COMBO_WINDOW_MS);
 
-    document.body.classList.remove('flash');
-    void document.body.offsetWidth;
-    document.body.classList.add('flash');
-    setTimeout(() => document.body.classList.remove('flash'), 250);
-
-    setTimeout(() => h.el.classList.remove('whacked'), 280);
+    flashScreen(false);
+    if (h.reactionTimer) clearTimeout(h.reactionTimer);
+    h.reactionTimer = setTimeout(() => {
+      h.el.classList.remove('whacked');
+      h.img.src = ART.yannikIdle;
+    }, REACTION_MS);
   }
 
-  function spawnPopup(parent, text) {
+  function handleOliverHit(h) {
+    h.img.src = ART.oliverFrown;
+    h.el.classList.add('penalty');
+    h.el.classList.remove('up', 'oliver-active');
+
+    setScore(Math.max(0, score - PENALTY));
+    setCombo(1);
+    if (comboTimer) clearTimeout(comboTimer);
+    lastHitAt = 0;
+
+    spawnPopup(h.el, `−${PENALTY}`, true);
+    flashScreen(true);
+
+    if (h.reactionTimer) clearTimeout(h.reactionTimer);
+    h.reactionTimer = setTimeout(() => {
+      h.el.classList.remove('penalty');
+      h.img.src = ART.oliverIdle;
+    }, REACTION_MS);
+  }
+
+  function flashScreen(penalty) {
+    document.body.classList.remove('flash', 'penalty');
+    void document.body.offsetWidth;
+    document.body.classList.add('flash');
+    if (penalty) document.body.classList.add('penalty');
+    setTimeout(() => document.body.classList.remove('flash', 'penalty'), 380);
+  }
+
+  function spawnPopup(parent, text, penalty = false) {
     const p = document.createElement('div');
-    p.className = 'score-popup';
+    p.className = 'score-popup' + (penalty ? ' penalty' : '');
     p.textContent = text;
     parent.appendChild(p);
-    setTimeout(() => p.remove(), 800);
+    setTimeout(() => p.remove(), 850);
   }
 
   function tick() {
     if (!running) return;
     setTime(timeLeft - 1);
     if (timeLeft <= 0) {
-      endGame();
+      endGame({ abandoned: false });
       return;
     }
     tickTimer = setTimeout(tick, 1000);
   }
 
-  function startGame() {
-    cleanupTimers();
+  function clearBoardState() {
     holes.forEach(h => {
       h.up = false;
       h.whacked = false;
-      h.el.classList.remove('up', 'whacked');
+      h.kind = 'yannik';
+      h.character.dataset.kind = 'yannik';
+      h.img.src = ART.yannikIdle;
+      h.el.classList.remove('up', 'whacked', 'penalty', 'oliver-active');
+      if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
+      if (h.reactionTimer) { clearTimeout(h.reactionTimer); h.reactionTimer = null; }
     });
+  }
+
+  function startGame() {
+    cancelAutoRestart();
+    cleanupTimers();
+    clearBoardState();
+    overlay.classList.add('hidden');
+
     setScore(0);
     setCombo(1);
     lastHitAt = 0;
     setTime(GAME_DURATION);
     running = true;
-    startBtn.disabled = true;
-    segButtons.forEach(b => b.disabled = true);
-    overlay.classList.add('hidden');
+
+    startBtnLabel.textContent = 'Restart Round';
+    quitBtn.classList.remove('hidden');
 
     tickTimer = setTimeout(tick, 1000);
     scheduleTimer = setTimeout(scheduleNext, 400);
   }
 
-  function endGame() {
+  function endGame({ abandoned }) {
     running = false;
     cleanupTimers();
     holes.forEach(h => {
       h.up = false;
-      h.el.classList.remove('up');
+      h.el.classList.remove('up', 'oliver-active');
     });
-    startBtn.disabled = false;
-    segButtons.forEach(b => b.disabled = false);
 
-    const isNewBest = score > best;
+    startBtnLabel.textContent = 'Begin Round';
+    quitBtn.classList.add('hidden');
+
+    const isNewBest = !abandoned && score > best;
     if (isNewBest) {
       best = score;
       localStorage.setItem(BEST_KEY, String(best));
       bestEl.textContent = best;
-      overlayTitle.textContent = 'New High Score';
-      overlayMessage.textContent = 'You whacked more Yanniks than ever before.';
-    } else {
-      overlayTitle.textContent = 'Game Over';
-      overlayMessage.textContent = score === 0
-        ? 'Yannik got away. Try again.'
-        : 'Nice run. Can you beat your best?';
     }
+
+    if (abandoned) {
+      overlayTitle.textContent = 'Round Surrendered';
+      overlayMessage.textContent = 'A new round will commence shortly.';
+    } else if (isNewBest) {
+      overlayTitle.textContent = 'A New Personal Best';
+      overlayMessage.textContent = 'A composed and accomplished performance.';
+    } else if (score === 0) {
+      overlayTitle.textContent = 'Round Concluded';
+      overlayMessage.textContent = 'Yannik proved elusive. Another round awaits.';
+    } else {
+      overlayTitle.textContent = 'Round Concluded';
+      overlayMessage.textContent = 'A respectable showing. Pursue the ledger.';
+    }
+
     finalScoreEl.textContent = score;
     finalBestEl.textContent = best;
     overlay.classList.remove('hidden');
+
+    startAutoRestart();
+  }
+
+  function startAutoRestart() {
+    cancelAutoRestart();
+    cancelAutoBtn.textContent = 'Hold';
+    cancelAutoBtn.disabled = false;
+    countdownLeft = AUTO_RESTART_SECONDS;
+    countdownEl.textContent = countdownLeft;
+    countdownTimer = setInterval(() => {
+      countdownLeft -= 1;
+      countdownEl.textContent = countdownLeft;
+      if (countdownLeft <= 0) {
+        cancelAutoRestart();
+        startGame();
+      }
+    }, 1000);
+  }
+
+  function cancelAutoRestart() {
+    if (countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
   }
 
   function cleanupTimers() {
@@ -233,23 +350,44 @@
     if (comboTimer) { clearTimeout(comboTimer); comboTimer = null; }
     holes.forEach(h => {
       if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
+      if (h.reactionTimer) { clearTimeout(h.reactionTimer); h.reactionTimer = null; }
     });
   }
 
   segButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      if (running) return;
+      if (btn.dataset.diff === difficulty && !running && overlay.classList.contains('hidden')) return;
+      const wasRunning = running;
+      const overlayOpen = !overlay.classList.contains('hidden');
       difficulty = btn.dataset.diff;
       segButtons.forEach(b => {
         const active = b === btn;
         b.classList.toggle('active', active);
         b.setAttribute('aria-checked', active ? 'true' : 'false');
       });
+      if (wasRunning || overlayOpen) {
+        startGame();
+      }
     });
   });
 
-  startBtn.addEventListener('click', startGame);
-  playAgainBtn.addEventListener('click', startGame);
+  startBtn.addEventListener('click', () => startGame());
+
+  quitBtn.addEventListener('click', () => {
+    if (!running) return;
+    endGame({ abandoned: true });
+  });
+
+  playAgainBtn.addEventListener('click', () => startGame());
+
+  cancelAutoBtn.addEventListener('click', () => {
+    if (countdownTimer) {
+      cancelAutoRestart();
+      cancelAutoBtn.textContent = 'Held';
+      cancelAutoBtn.disabled = true;
+      countdownEl.textContent = '–';
+    }
+  });
 
   buildBoard();
 })();

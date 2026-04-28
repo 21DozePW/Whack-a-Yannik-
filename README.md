@@ -1,10 +1,17 @@
 # Whack-a-Yannik
 
-A simple browser-based whack-a-mole game. Click or tap Yannik when he pops out of a hole — score as many hits as you can in 30 seconds.
+An elegant browser game of reflexes. Tap Yannik when he appears for points; avoid Oliver, who debits your score.
+
+## Gameplay
+
+- **Yannik** (smiling): tap him for +1 point. Successive hits within 1.4s build a streak (×2 → ×9).
+- **Oliver** (smiling, bald): appears unannounced. Tap him and you lose 5 points and your streak.
+- 30 seconds per round. Best score is preserved per device.
+- Switch tier mid-round to abandon the current game and start a fresh one.
 
 ## Run locally
 
-It's a static site, so any static server works:
+Static site, no build step:
 
 ```
 python3 -m http.server 8000
@@ -12,18 +19,12 @@ python3 -m http.server 8000
 
 Then open http://localhost:8000
 
-## Deploy on Vercel
+## Deploy
 
-1. Push this repo to GitHub.
-2. Go to https://vercel.com/new and import the repo.
-3. Vercel auto-detects it as a static site — no build step needed.
-4. Click **Deploy**. You'll get a free `*.vercel.app` URL.
+Pushed to `main` → Vercel auto-deploys to https://whack-a-yannik.vercel.app
 
 ## Assets
 
-Drop these files in the project root to customize the game:
-
-- `mole.png` — the Yannik character art (square image works best, transparent PNG ideal)
-- `thumbnail.png` — used as the favicon and Open Graph preview image
-
-If `mole.png` is missing, the game falls back to a CSS-drawn face so it still works.
+- `yannik-smile.png`, `yannik-surprised.png` — Yannik idle and reaction
+- `oliver-smile.png`, `oliver-frown.png` — Oliver idle and reaction
+- `thumbnail.png` — 1200×630 OG image for sharing
