@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#efe7d6" />
+  <title>Round in Play — Whack-a-Yannik</title>
+  <meta name="description" content="A composed game of reflexes. Tap Yannik for points. Avoid Oliver." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Whack-a-Yannik" />
+  <meta property="og:description" content="A composed game of reflexes." />
+  <meta property="og:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
+  <meta property="og:image:secure_url" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://whack-a-yannik.vercel.app/play" />
+
+  <link rel="icon" type="image/png" href="/thumbnail.png" />
+  <link rel="apple-touch-icon" href="/thumbnail.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="Whack-a-Yannik">
+        <span class="mark" aria-hidden="true">WY</span>
+        <span class="wordmark">
+          <span class="wordmark-name">Whack-a-Yannik</span>
+          <span class="wordmark-sub">Private Reflex Series</span>
+        </span>
+      </a>
+      <nav class="topnav" aria-label="Primary">
+        <a href="/">Lounge</a>
+        <a href="/play" class="active" aria-current="page">Play</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="play-hero">
+      <p class="eyebrow"><span class="num">02</span> · Round Underway</p>
+      <h1 class="display">The Floor is Yours.</h1>
+      <p class="lede">Strike Yannik for points. Avoid Oliver, who appears unbidden. Switch tier whenever you wish — the round will reset accordingly.</p>
+    </section>
+
+    <section class="dashboard" aria-label="Performance">
+      <div class="metric">
+        <span class="metric-label">Score</span>
+        <span id="score" class="metric-value">0</span>
+      </div>
+      <div class="metric metric-time">
+        <span class="metric-label">Time Remaining</span>
+        <span class="metric-value">
+          <span id="time" class="num">30</span><span class="unit">s</span>
+        </span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Streak</span>
+        <span id="combo" class="metric-value">×1</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Personal Best</span>
+        <span id="best" class="metric-value">0</span>
+      </div>
+    </section>
+
+    <section class="controls" id="play">
+      <div class="control-row">
+        <span class="control-label">Tier</span>
+        <div class="seg" role="radiogroup" aria-label="Difficulty">
+          <button class="seg-btn" data-diff="easy" role="radio" aria-checked="false">Easy</button>
+          <button class="seg-btn active" data-diff="normal" role="radio" aria-checked="true">Normal</button>
+          <button class="seg-btn" data-diff="hard" role="radio" aria-checked="false">Hard</button>
+          <button class="seg-btn" data-diff="insane" role="radio" aria-checked="false">Insane</button>
+        </div>
+      </div>
+      <div class="control-row">
+        <button id="startBtn" class="btn-primary">
+          <span class="btn-label">Begin Round</span>
+        </button>
+        <button id="quitBtn" class="btn-ghost hidden">Surrender Round</button>
+      </div>
+      <p class="control-note">Switching tier mid-round will end the current game and begin a new one.</p>
+    </section>
+
+    <section class="board" id="board" aria-label="Game board"></section>
+
+    <section class="cast" aria-label="Cast of characters">
+      <article class="cast-card cast-good">
+        <img src="yannik-smile.png" alt="Yannik" class="cast-portrait" />
+        <div class="cast-text">
+          <span class="eyebrow">Strike</span>
+          <h3 class="cast-name">Yannik</h3>
+          <p class="cast-meta">+1 point · streak multipliers up to ×9</p>
+        </div>
+      </article>
+      <article class="cast-card cast-bad">
+        <img src="oliver-smile.png" alt="Oliver" class="cast-portrait" />
+        <div class="cast-text">
+          <span class="eyebrow">Avoid</span>
+          <h3 class="cast-name">Oliver</h3>
+          <p class="cast-meta">−5 points · resets your streak</p>
+        </div>
+      </article>
+    </section>
+
+    <p class="page-back"><a href="/">← Return to the Lounge</a></p>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span class="footer-brand">Whack-a-Yannik</span>
+        <span class="footer-meta">Made with restraint · MMXXVI</span>
+      </div>
+    </footer>
+  </main>
+
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+    <div class="overlay-card">
+      <p class="eyebrow">Round Concluded</p>
+      <h2 id="overlayTitle" class="display small">Game Over</h2>
+      <p id="overlayMessage" class="lede small">A composed performance.</p>
+
+      <div class="overlay-stats">
+        <div class="overlay-stat">
+          <span class="metric-label">Final Score</span>
+          <span id="finalScore" class="overlay-num">0</span>
+        </div>
+        <div class="overlay-divider" aria-hidden="true"></div>
+        <div class="overlay-stat">
+          <span class="metric-label">Personal Best</span>
+          <span id="finalBest" class="overlay-num">0</span>
+        </div>
+      </div>
+
+      <div class="overlay-countdown">
+        <span class="countdown-label">Next round commences in</span>
+        <span id="countdown" class="countdown-num">5</span>
+      </div>
+
+      <div class="overlay-actions">
+        <button id="playAgainBtn" class="btn-primary">
+          <span class="btn-label">Begin Now</span>
+        </button>
+        <button id="cancelAutoBtn" class="btn-ghost">Hold</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

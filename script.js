@@ -4,9 +4,9 @@
   const COMBO_WINDOW_MS = 1400;
   const AUTO_RESTART_SECONDS = 5;
   const TIME_WARNING = 10;
-  const OLIVER_PROBABILITY = 0.22;
   const PENALTY = 5;
-  const REACTION_MS = 360;
+  const YANNIK_REACTION_MS = 520;
+  const OLIVER_REACTION_MS = 1100;
 
   const ART = {
     yannikIdle:      'yannik-smile.png',
@@ -23,13 +23,15 @@
   };
 
   const board = document.getElementById('board');
+  if (!board) return; // landing page has no board
+
   const scoreEl = document.getElementById('score');
   const timeEl = document.getElementById('time');
-  const timeMetric = timeEl.closest('.metric');
+  const timeMetric = timeEl ? timeEl.closest('.metric') : null;
   const bestEl = document.getElementById('best');
   const comboEl = document.getElementById('combo');
   const startBtn = document.getElementById('startBtn');
-  const startBtnLabel = startBtn.querySelector('.btn-label');
+  const startBtnLabel = startBtn ? startBtn.querySelector('.btn-label') : null;
   const quitBtn = document.getElementById('quitBtn');
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
@@ -56,9 +58,8 @@
 
   const BEST_KEY = 'whackYannikBest';
   let best = Number(localStorage.getItem(BEST_KEY) || 0);
-  bestEl.textContent = best;
+  if (bestEl) bestEl.textContent = best;
 
-  // Preload character art so reaction swaps are instant
   Object.values(ART).forEach(src => { const i = new Image(); i.src = src; });
 
   function buildBoard() {
@@ -93,29 +94,25 @@
         kind: 'yannik',
         up: false,
         whacked: false,
+        locked: false,
         hideTimer: null,
         reactionTimer: null,
+        retreatTimer: null,
       });
     }
   }
 
-  function setScore(v) {
-    score = v;
-    scoreEl.textContent = score;
-  }
-  function setCombo(v) {
-    combo = v;
-    comboEl.textContent = `×${combo}`;
-  }
+  function setScore(v) { score = v; if (scoreEl) scoreEl.textContent = score; }
+  function setCombo(v) { combo = v; if (comboEl) comboEl.textContent = `×${combo}`; }
   function setTime(v) {
     timeLeft = v;
-    timeEl.textContent = timeLeft;
+    if (timeEl) timeEl.textContent = timeLeft;
     if (timeMetric) timeMetric.classList.toggle('warning', timeLeft <= TIME_WARNING);
   }
 
   function popUp(idx, durationMs, kind) {
     const h = holes[idx];
-    if (!h || h.up) return;
+    if (!h || h.up || h.locked) return;
     h.up = true;
     h.whacked = false;
     h.kind = kind;
@@ -138,7 +135,7 @@
   function pickHoles(n) {
     const available = holes
       .map((h, i) => ({ h, i }))
-      .filter(({ h }) => !h.up)
+      .filter(({ h }) => !h.up && !h.locked)
       .map(({ i }) => i);
     const picks = [];
     while (picks.length < n && available.length) {
@@ -163,10 +160,10 @@
   function onWhack(e, idx) {
     if (!running) return;
     const h = holes[idx];
-    if (!h || !h.up || h.whacked) return;
+    if (!h || !h.up || h.whacked || h.locked) return;
 
     h.whacked = true;
-    h.up = false;
+    h.locked = true;
     if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
 
     if (h.kind === 'oliver') {
@@ -176,10 +173,29 @@
     }
   }
 
+  function clearHoleAfterReaction(h, holdMs) {
+    if (h.reactionTimer) clearTimeout(h.reactionTimer);
+    if (h.retreatTimer) clearTimeout(h.retreatTimer);
+
+    // Hold the reaction image visible (character stays at "up" position).
+    h.reactionTimer = setTimeout(() => {
+      h.el.classList.remove('up', 'oliver-active');
+      // Character now retreats via the default bottom transition.
+      // After retreat finishes, reset state and image.
+      h.retreatTimer = setTimeout(() => {
+        h.el.classList.remove('whacked', 'penalty');
+        h.up = false;
+        h.locked = false;
+        h.kind = 'yannik';
+        h.character.dataset.kind = 'yannik';
+        h.img.src = ART.yannikIdle;
+      }, 320);
+    }, holdMs);
+  }
+
   function handleYannikHit(h) {
     h.img.src = ART.yannikSurprised;
     h.el.classList.add('whacked');
-    h.el.classList.remove('up', 'oliver-active');
 
     const now = performance.now();
     if (now - lastHitAt < COMBO_WINDOW_MS) {
@@ -197,17 +213,12 @@
     comboTimer = setTimeout(() => setCombo(1), COMBO_WINDOW_MS);
 
     flashScreen(false);
-    if (h.reactionTimer) clearTimeout(h.reactionTimer);
-    h.reactionTimer = setTimeout(() => {
-      h.el.classList.remove('whacked');
-      h.img.src = ART.yannikIdle;
-    }, REACTION_MS);
+    clearHoleAfterReaction(h, YANNIK_REACTION_MS);
   }
 
   function handleOliverHit(h) {
     h.img.src = ART.oliverFrown;
     h.el.classList.add('penalty');
-    h.el.classList.remove('up', 'oliver-active');
 
     setScore(Math.max(0, score - PENALTY));
     setCombo(1);
@@ -216,12 +227,7 @@
 
     spawnPopup(h.el, `−${PENALTY}`, true);
     flashScreen(true);
-
-    if (h.reactionTimer) clearTimeout(h.reactionTimer);
-    h.reactionTimer = setTimeout(() => {
-      h.el.classList.remove('penalty');
-      h.img.src = ART.oliverIdle;
-    }, REACTION_MS);
+    clearHoleAfterReaction(h, OLIVER_REACTION_MS);
   }
 
   function flashScreen(penalty) {
@@ -229,7 +235,7 @@
     void document.body.offsetWidth;
     document.body.classList.add('flash');
     if (penalty) document.body.classList.add('penalty');
-    setTimeout(() => document.body.classList.remove('flash', 'penalty'), 380);
+    setTimeout(() => document.body.classList.remove('flash', 'penalty'), 500);
   }
 
   function spawnPopup(parent, text, penalty = false) {
@@ -237,7 +243,7 @@
     p.className = 'score-popup' + (penalty ? ' penalty' : '');
     p.textContent = text;
     parent.appendChild(p);
-    setTimeout(() => p.remove(), 850);
+    setTimeout(() => p.remove(), 1000);
   }
 
   function tick() {
@@ -254,12 +260,14 @@
     holes.forEach(h => {
       h.up = false;
       h.whacked = false;
+      h.locked = false;
       h.kind = 'yannik';
       h.character.dataset.kind = 'yannik';
       h.img.src = ART.yannikIdle;
       h.el.classList.remove('up', 'whacked', 'penalty', 'oliver-active');
       if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
       if (h.reactionTimer) { clearTimeout(h.reactionTimer); h.reactionTimer = null; }
+      if (h.retreatTimer) { clearTimeout(h.retreatTimer); h.retreatTimer = null; }
     });
   }
 
@@ -267,7 +275,7 @@
     cancelAutoRestart();
     cleanupTimers();
     clearBoardState();
-    overlay.classList.add('hidden');
+    if (overlay) overlay.classList.add('hidden');
 
     setScore(0);
     setCombo(1);
@@ -275,8 +283,8 @@
     setTime(GAME_DURATION);
     running = true;
 
-    startBtnLabel.textContent = 'Restart Round';
-    quitBtn.classList.remove('hidden');
+    if (startBtnLabel) startBtnLabel.textContent = 'Restart Round';
+    if (quitBtn) quitBtn.classList.remove('hidden');
 
     tickTimer = setTimeout(tick, 1000);
     scheduleTimer = setTimeout(scheduleNext, 400);
@@ -287,18 +295,21 @@
     cleanupTimers();
     holes.forEach(h => {
       h.up = false;
+      h.locked = false;
       h.el.classList.remove('up', 'oliver-active');
     });
 
-    startBtnLabel.textContent = 'Begin Round';
-    quitBtn.classList.add('hidden');
+    if (startBtnLabel) startBtnLabel.textContent = 'Begin Round';
+    if (quitBtn) quitBtn.classList.add('hidden');
 
     const isNewBest = !abandoned && score > best;
     if (isNewBest) {
       best = score;
       localStorage.setItem(BEST_KEY, String(best));
-      bestEl.textContent = best;
+      if (bestEl) bestEl.textContent = best;
     }
+
+    if (!overlay) return;
 
     if (abandoned) {
       overlayTitle.textContent = 'Round Surrendered';
@@ -323,13 +334,15 @@
 
   function startAutoRestart() {
     cancelAutoRestart();
-    cancelAutoBtn.textContent = 'Hold';
-    cancelAutoBtn.disabled = false;
+    if (cancelAutoBtn) {
+      cancelAutoBtn.textContent = 'Hold';
+      cancelAutoBtn.disabled = false;
+    }
     countdownLeft = AUTO_RESTART_SECONDS;
-    countdownEl.textContent = countdownLeft;
+    if (countdownEl) countdownEl.textContent = countdownLeft;
     countdownTimer = setInterval(() => {
       countdownLeft -= 1;
-      countdownEl.textContent = countdownLeft;
+      if (countdownEl) countdownEl.textContent = countdownLeft;
       if (countdownLeft <= 0) {
         cancelAutoRestart();
         startGame();
@@ -351,14 +364,15 @@
     holes.forEach(h => {
       if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
       if (h.reactionTimer) { clearTimeout(h.reactionTimer); h.reactionTimer = null; }
+      if (h.retreatTimer) { clearTimeout(h.retreatTimer); h.retreatTimer = null; }
     });
   }
 
   segButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.dataset.diff === difficulty && !running && overlay.classList.contains('hidden')) return;
+      if (btn.dataset.diff === difficulty && !running && (!overlay || overlay.classList.contains('hidden'))) return;
       const wasRunning = running;
-      const overlayOpen = !overlay.classList.contains('hidden');
+      const overlayOpen = overlay && !overlay.classList.contains('hidden');
       difficulty = btn.dataset.diff;
       segButtons.forEach(b => {
         const active = b === btn;
@@ -371,21 +385,21 @@
     });
   });
 
-  startBtn.addEventListener('click', () => startGame());
+  if (startBtn) startBtn.addEventListener('click', () => startGame());
 
-  quitBtn.addEventListener('click', () => {
+  if (quitBtn) quitBtn.addEventListener('click', () => {
     if (!running) return;
     endGame({ abandoned: true });
   });
 
-  playAgainBtn.addEventListener('click', () => startGame());
+  if (playAgainBtn) playAgainBtn.addEventListener('click', () => startGame());
 
-  cancelAutoBtn.addEventListener('click', () => {
+  if (cancelAutoBtn) cancelAutoBtn.addEventListener('click', () => {
     if (countdownTimer) {
       cancelAutoRestart();
       cancelAutoBtn.textContent = 'Held';
       cancelAutoBtn.disabled = true;
-      countdownEl.textContent = '–';
+      if (countdownEl) countdownEl.textContent = '–';
     }
   });
 
