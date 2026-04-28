@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whack-a-Yannik</title>
+  <meta name="description" content="Whack-a-Yannik - a fun whack-a-mole game!" />
+  <meta property="og:title" content="Whack-a-Yannik" />
+  <meta property="og:description" content="Whack-a-Yannik - a fun whack-a-mole game!" />
+  <meta property="og:image" content="/thumbnail.png" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/png" href="/thumbnail.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hud">
+      <h1>Whack-a-Yannik</h1>
+      <div class="stats">
+        <div class="stat">
+          <span class="label">Score</span>
+          <span id="score" class="value">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">Time</span>
+          <span id="time" class="value">30</span>
+        </div>
+        <div class="stat">
+          <span class="label">Best</span>
+          <span id="best" class="value">0</span>
+        </div>
+      </div>
+      <div class="controls">
+        <label class="difficulty">
+          Difficulty
+          <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+            <option value="insane">Insane</option>
+          </select>
+        </label>
+        <button id="startBtn" class="btn primary">Start</button>
+      </div>
+    </header>
+
+    <main class="board" id="board">
+      <!-- 9 holes injected by JS -->
+    </main>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h2 id="overlayTitle">Game Over</h2>
+        <p id="overlayMessage">Nice whacking!</p>
+        <p class="final">Final score: <span id="finalScore">0</span></p>
+        <button id="playAgainBtn" class="btn primary">Play Again</button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>Click or tap a Yannik to whack him. You have 30 seconds. Good luck!</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
