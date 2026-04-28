@@ -2,64 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0b1f" />
   <title>Whack-a-Yannik</title>
-  <meta name="description" content="Whack-a-Yannik - a fun whack-a-mole game!" />
-  <meta property="og:title" content="Whack-a-Yannik" />
-  <meta property="og:description" content="Whack-a-Yannik - a fun whack-a-mole game!" />
-  <meta property="og:image" content="/thumbnail.png" />
+  <meta name="description" content="Tap fast. Score high. A neon arcade twist on whack-a-mole." />
+
+  <!-- Open Graph / WhatsApp / Facebook -->
   <meta property="og:type" content="website" />
+  <meta property="og:title" content="Whack-a-Yannik" />
+  <meta property="og:description" content="Tap fast. Score high. A neon arcade twist on whack-a-mole." />
+  <meta property="og:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
+  <meta property="og:image:secure_url" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Whack-a-Yannik game preview" />
+  <meta property="og:url" content="https://whack-a-yannik.vercel.app/" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Whack-a-Yannik" />
+  <meta name="twitter:description" content="Tap fast. Score high. A neon arcade twist on whack-a-mole." />
+  <meta name="twitter:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
+
   <link rel="icon" type="image/png" href="/thumbnail.png" />
+  <link rel="apple-touch-icon" href="/thumbnail.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="hud">
-      <h1>Whack-a-Yannik</h1>
-      <div class="stats">
-        <div class="stat">
-          <span class="label">Score</span>
-          <span id="score" class="value">0</span>
-        </div>
-        <div class="stat">
-          <span class="label">Time</span>
-          <span id="time" class="value">30</span>
-        </div>
-        <div class="stat">
-          <span class="label">Best</span>
-          <span id="best" class="value">0</span>
-        </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+  </div>
+
+  <main class="app">
+    <header class="brand">
+      <div class="logo">
+        <span class="logo-mark">W·Y</span>
       </div>
-      <div class="controls">
-        <label class="difficulty">
-          Difficulty
-          <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="normal" selected>Normal</option>
-            <option value="hard">Hard</option>
-            <option value="insane">Insane</option>
-          </select>
-        </label>
-        <button id="startBtn" class="btn primary">Start</button>
+      <div class="title-block">
+        <h1>Whack<span class="dash">·</span>a<span class="dash">·</span>Yannik</h1>
+        <p class="tagline">Tap fast. Score high.</p>
       </div>
     </header>
 
-    <main class="board" id="board">
-      <!-- 9 holes injected by JS -->
-    </main>
-
-    <div id="overlay" class="overlay hidden">
-      <div class="overlay-card">
-        <h2 id="overlayTitle">Game Over</h2>
-        <p id="overlayMessage">Nice whacking!</p>
-        <p class="final">Final score: <span id="finalScore">0</span></p>
-        <button id="playAgainBtn" class="btn primary">Play Again</button>
+    <section class="hud" aria-label="Game stats">
+      <div class="stat-card">
+        <span class="stat-label">Score</span>
+        <span id="score" class="stat-value">0</span>
       </div>
-    </div>
+      <div class="stat-card accent">
+        <span class="stat-label">Time</span>
+        <span id="time" class="stat-value mono">30</span>
+        <span class="stat-suffix">s</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Combo</span>
+        <span id="combo" class="stat-value">×1</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Best</span>
+        <span id="best" class="stat-value">0</span>
+      </div>
+    </section>
 
-    <footer class="footer">
-      <p>Click or tap a Yannik to whack him. You have 30 seconds. Good luck!</p>
-    </footer>
+    <section class="controls" aria-label="Controls">
+      <div class="seg" role="radiogroup" aria-label="Difficulty">
+        <button class="seg-btn" data-diff="easy" role="radio" aria-checked="false">Easy</button>
+        <button class="seg-btn active" data-diff="normal" role="radio" aria-checked="true">Normal</button>
+        <button class="seg-btn" data-diff="hard" role="radio" aria-checked="false">Hard</button>
+        <button class="seg-btn" data-diff="insane" role="radio" aria-checked="false">Insane</button>
+      </div>
+      <button id="startBtn" class="btn-primary">
+        <span class="btn-label">Start Game</span>
+        <span class="btn-glow" aria-hidden="true"></span>
+      </button>
+    </section>
+
+    <section class="board" id="board" aria-label="Game board"></section>
+
+    <p class="hint">Click or tap Yannik when he pops up. Chain hits for combo bonuses.</p>
+  </main>
+
+  <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+    <div class="overlay-card">
+      <div class="overlay-glow" aria-hidden="true"></div>
+      <h2 id="overlayTitle">Game Over</h2>
+      <p id="overlayMessage">Nice whacking!</p>
+      <div class="overlay-stats">
+        <div>
+          <span class="overlay-label">Final score</span>
+          <span id="finalScore" class="overlay-num">0</span>
+        </div>
+        <div>
+          <span class="overlay-label">Best</span>
+          <span id="finalBest" class="overlay-num">0</span>
+        </div>
+      </div>
+      <button id="playAgainBtn" class="btn-primary">
+        <span class="btn-label">Play Again</span>
+        <span class="btn-glow" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 
   <script src="script.js"></script>

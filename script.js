@@ -1,6 +1,7 @@
 (() => {
   const HOLES = 9;
   const GAME_DURATION = 30;
+  const COMBO_WINDOW_MS = 1400;
 
   const DIFFICULTY = {
     easy:   { upMin: 900, upMax: 1500, gapMin: 500, gapMax: 1000, multi: 1 },
@@ -13,27 +14,32 @@
   const scoreEl = document.getElementById('score');
   const timeEl = document.getElementById('time');
   const bestEl = document.getElementById('best');
+  const comboEl = document.getElementById('combo');
   const startBtn = document.getElementById('startBtn');
-  const difficultySel = document.getElementById('difficulty');
   const overlay = document.getElementById('overlay');
   const overlayTitle = document.getElementById('overlayTitle');
   const overlayMessage = document.getElementById('overlayMessage');
   const finalScoreEl = document.getElementById('finalScore');
+  const finalBestEl = document.getElementById('finalBest');
   const playAgainBtn = document.getElementById('playAgainBtn');
+  const segButtons = Array.from(document.querySelectorAll('.seg-btn'));
 
   let holes = [];
   let score = 0;
+  let combo = 1;
+  let comboTimer = null;
+  let lastHitAt = 0;
   let timeLeft = GAME_DURATION;
   let running = false;
   let tickTimer = null;
   let scheduleTimer = null;
   let useMoleImage = true;
+  let difficulty = 'normal';
 
   const BEST_KEY = 'whackYannikBest';
   let best = Number(localStorage.getItem(BEST_KEY) || 0);
   bestEl.textContent = best;
 
-  // Check if mole.png loads; if not, use CSS fallback face.
   const probe = new Image();
   probe.onload = () => { useMoleImage = true; refreshMoleArt(); };
   probe.onerror = () => { useMoleImage = false; refreshMoleArt(); };
@@ -52,6 +58,8 @@
       const hole = document.createElement('div');
       hole.className = 'hole';
       hole.dataset.index = i;
+      hole.setAttribute('role', 'button');
+      hole.setAttribute('aria-label', `Hole ${i + 1}`);
 
       const mole = document.createElement('div');
       mole.className = 'mole' + (useMoleImage ? '' : ' fallback');
@@ -71,6 +79,11 @@
   function setTime(v) {
     timeLeft = v;
     timeEl.textContent = timeLeft;
+  }
+
+  function setCombo(v) {
+    combo = v;
+    comboEl.textContent = `×${combo}`;
   }
 
   function popUp(idx, durationMs) {
@@ -108,7 +121,7 @@
 
   function scheduleNext() {
     if (!running) return;
-    const cfg = DIFFICULTY[difficultySel.value] || DIFFICULTY.normal;
+    const cfg = DIFFICULTY[difficulty] || DIFFICULTY.normal;
     const count = randInt(1, cfg.multi);
     const picks = pickHoles(count);
     picks.forEach(i => popUp(i, randInt(cfg.upMin, cfg.upMax)));
@@ -125,15 +138,27 @@
     h.el.classList.remove('up');
     if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
 
-    setScore(score + 1);
-    spawnPopup(h.el, '+1');
+    const now = performance.now();
+    if (now - lastHitAt < COMBO_WINDOW_MS) {
+      setCombo(Math.min(combo + 1, 9));
+    } else {
+      setCombo(1);
+    }
+    lastHitAt = now;
 
-    document.body.classList.remove('shake');
+    const points = combo;
+    setScore(score + points);
+    spawnPopup(h.el, `+${points}${combo > 1 ? ` ×${combo}` : ''}`);
+
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(() => setCombo(1), COMBO_WINDOW_MS);
+
+    document.body.classList.remove('flash');
     void document.body.offsetWidth;
-    document.body.classList.add('shake');
-    setTimeout(() => document.body.classList.remove('shake'), 200);
+    document.body.classList.add('flash');
+    setTimeout(() => document.body.classList.remove('flash'), 250);
 
-    setTimeout(() => h.el.classList.remove('whacked'), 250);
+    setTimeout(() => h.el.classList.remove('whacked'), 280);
   }
 
   function spawnPopup(parent, text) {
@@ -141,7 +166,7 @@
     p.className = 'score-popup';
     p.textContent = text;
     parent.appendChild(p);
-    setTimeout(() => p.remove(), 700);
+    setTimeout(() => p.remove(), 800);
   }
 
   function tick() {
@@ -162,10 +187,12 @@
       h.el.classList.remove('up', 'whacked');
     });
     setScore(0);
+    setCombo(1);
+    lastHitAt = 0;
     setTime(GAME_DURATION);
     running = true;
     startBtn.disabled = true;
-    difficultySel.disabled = true;
+    segButtons.forEach(b => b.disabled = true);
     overlay.classList.add('hidden');
 
     tickTimer = setTimeout(tick, 1000);
@@ -180,31 +207,46 @@
       h.el.classList.remove('up');
     });
     startBtn.disabled = false;
-    difficultySel.disabled = false;
+    segButtons.forEach(b => b.disabled = false);
 
-    if (score > best) {
+    const isNewBest = score > best;
+    if (isNewBest) {
       best = score;
       localStorage.setItem(BEST_KEY, String(best));
       bestEl.textContent = best;
-      overlayTitle.textContent = 'New Best!';
-      overlayMessage.textContent = 'You whacked more Yanniks than ever before!';
+      overlayTitle.textContent = 'New High Score';
+      overlayMessage.textContent = 'You whacked more Yanniks than ever before.';
     } else {
       overlayTitle.textContent = 'Game Over';
       overlayMessage.textContent = score === 0
-        ? 'Yannik got away. Try again!'
-        : 'Nice whacking! Can you beat your best?';
+        ? 'Yannik got away. Try again.'
+        : 'Nice run. Can you beat your best?';
     }
     finalScoreEl.textContent = score;
+    finalBestEl.textContent = best;
     overlay.classList.remove('hidden');
   }
 
   function cleanupTimers() {
     if (tickTimer) { clearTimeout(tickTimer); tickTimer = null; }
     if (scheduleTimer) { clearTimeout(scheduleTimer); scheduleTimer = null; }
+    if (comboTimer) { clearTimeout(comboTimer); comboTimer = null; }
     holes.forEach(h => {
       if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
     });
   }
+
+  segButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (running) return;
+      difficulty = btn.dataset.diff;
+      segButtons.forEach(b => {
+        const active = b === btn;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+    });
+  });
 
   startBtn.addEventListener('click', startGame);
   playAgainBtn.addEventListener('click', startGame);
