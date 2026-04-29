@@ -5,25 +5,33 @@
   const AUTO_RESTART_SECONDS = 5;
   const TIME_WARNING = 10;
   const PENALTY = 5;
-  const YANNIK_REACTION_MS = 520;
+  const PEDRO_REACTION_MS = 520;
   const OLIVER_REACTION_MS = 1100;
+  const TOBI_REACTION_MS = 700;
+  const TOBI_BASE = 15;
+  const TOBI_MAX = 45;
 
   const ART = {
-    yannikIdle:      'yannik-smile.png',
-    yannikSurprised: 'yannik-surprised.png',
-    oliverIdle:      'oliver-smile.png',
-    oliverFrown:     'oliver-frown.png',
+    pedroIdle:      'pedro-smile.png',
+    pedroSurprised: 'pedro-surprised.png',
+    oliverIdle:     'oliver-smile.png',
+    oliverFrown:    'oliver-frown.png',
+    tobiIdle:       'tobi-smile.png',
+    tobiShades:     'tobi-shades.png',
   };
 
+  // Base "multi" = max simultaneous pop-ups; oliver = chance per pop;
+  // tobi = chance per pop (independent, applied first); upMin/upMax
+  // = visible duration; gapMin/gapMax = inter-pop interval.
   const DIFFICULTY = {
-    easy:   { upMin: 900, upMax: 1500, gapMin: 500, gapMax: 1000, multi: 1, oliver: 0.15 },
-    normal: { upMin: 700, upMax: 1200, gapMin: 350, gapMax: 800,  multi: 2, oliver: 0.22 },
-    hard:   { upMin: 500, upMax: 900,  gapMin: 200, gapMax: 500,  multi: 2, oliver: 0.28 },
-    insane: { upMin: 350, upMax: 650,  gapMin: 100, gapMax: 300,  multi: 3, oliver: 0.34 },
+    easy:   { upMin: 900, upMax: 1500, gapMin: 500, gapMax: 1000, multi: 1, oliver: 0.15, tobi: 0.05 },
+    normal: { upMin: 700, upMax: 1200, gapMin: 350, gapMax: 800,  multi: 2, oliver: 0.22, tobi: 0.07 },
+    hard:   { upMin: 500, upMax: 900,  gapMin: 200, gapMax: 500,  multi: 2, oliver: 0.28, tobi: 0.08 },
+    insane: { upMin: 350, upMax: 650,  gapMin: 100, gapMax: 300,  multi: 3, oliver: 0.34, tobi: 0.10 },
   };
 
   const board = document.getElementById('board');
-  if (!board) return; // landing page has no board
+  if (!board) return;
 
   const scoreEl = document.getElementById('score');
   const timeEl = document.getElementById('time');
@@ -56,7 +64,7 @@
   let countdownLeft = 0;
   let difficulty = 'normal';
 
-  const BEST_KEY = 'whackYannikBest';
+  const BEST_KEY = 'whackBjssBest';
   let best = Number(localStorage.getItem(BEST_KEY) || 0);
   if (bestEl) bestEl.textContent = best;
 
@@ -74,24 +82,24 @@
 
       const character = document.createElement('div');
       character.className = 'character';
-      character.dataset.kind = 'yannik';
+      character.dataset.kind = 'pedro';
 
       const img = document.createElement('img');
       img.className = 'character-img';
-      img.src = ART.yannikIdle;
+      img.src = ART.pedroIdle;
       img.alt = '';
       img.draggable = false;
       character.appendChild(img);
 
       hole.appendChild(character);
-      hole.addEventListener('pointerdown', (e) => onWhack(e, i));
+      hole.addEventListener('pointerdown', () => onWhack(i));
       board.appendChild(hole);
 
       holes.push({
         el: hole,
         character,
         img,
-        kind: 'yannik',
+        kind: 'pedro',
         up: false,
         whacked: false,
         locked: false,
@@ -117,15 +125,19 @@
     h.whacked = false;
     h.kind = kind;
     h.character.dataset.kind = kind;
-    h.img.src = kind === 'oliver' ? ART.oliverIdle : ART.yannikIdle;
+    h.img.src =
+      kind === 'oliver' ? ART.oliverIdle :
+      kind === 'tobi'   ? ART.tobiIdle   :
+                          ART.pedroIdle;
+    h.el.classList.remove('whacked', 'penalty', 'oliver-active', 'tobi-active', 'bonus');
     h.el.classList.add('up');
-    h.el.classList.remove('whacked', 'penalty', 'oliver-active');
     if (kind === 'oliver') h.el.classList.add('oliver-active');
+    if (kind === 'tobi')   h.el.classList.add('tobi-active');
 
     h.hideTimer = setTimeout(() => {
       if (h.up && !h.whacked) {
         h.up = false;
-        h.el.classList.remove('up', 'oliver-active');
+        h.el.classList.remove('up', 'oliver-active', 'tobi-active');
       }
     }, durationMs);
   }
@@ -145,19 +157,29 @@
     return picks;
   }
 
+  function rollKind(cfg) {
+    const r = Math.random();
+    if (r < cfg.tobi) return 'tobi';
+    if (r < cfg.tobi + cfg.oliver) return 'oliver';
+    return 'pedro';
+  }
+
   function scheduleNext() {
     if (!running) return;
     const cfg = DIFFICULTY[difficulty] || DIFFICULTY.normal;
     const count = randInt(1, cfg.multi);
     const picks = pickHoles(count);
     picks.forEach(i => {
-      const kind = Math.random() < cfg.oliver ? 'oliver' : 'yannik';
-      popUp(i, randInt(cfg.upMin, cfg.upMax), kind);
+      const kind = rollKind(cfg);
+      const dur = kind === 'tobi'
+        ? randInt(Math.max(280, cfg.upMin - 250), Math.max(550, cfg.upMax - 350))
+        : randInt(cfg.upMin, cfg.upMax);
+      popUp(i, dur, kind);
     });
     scheduleTimer = setTimeout(scheduleNext, randInt(cfg.gapMin, cfg.gapMax));
   }
 
-  function onWhack(e, idx) {
+  function onWhack(idx) {
     if (!running) return;
     const h = holes[idx];
     if (!h || !h.up || h.whacked || h.locked) return;
@@ -166,54 +188,63 @@
     h.locked = true;
     if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
 
-    if (h.kind === 'oliver') {
-      handleOliverHit(h);
-    } else {
-      handleYannikHit(h);
-    }
+    if (h.kind === 'oliver')      handleOliverHit(h);
+    else if (h.kind === 'tobi')   handleTobiHit(h);
+    else                          handlePedroHit(h);
   }
 
   function clearHoleAfterReaction(h, holdMs) {
     if (h.reactionTimer) clearTimeout(h.reactionTimer);
     if (h.retreatTimer) clearTimeout(h.retreatTimer);
 
-    // Hold the reaction image visible (character stays at "up" position).
     h.reactionTimer = setTimeout(() => {
-      h.el.classList.remove('up', 'oliver-active');
-      // Character now retreats via the default bottom transition.
-      // After retreat finishes, reset state and image.
+      h.el.classList.remove('up', 'oliver-active', 'tobi-active');
       h.retreatTimer = setTimeout(() => {
-        h.el.classList.remove('whacked', 'penalty');
+        h.el.classList.remove('whacked', 'penalty', 'bonus');
         h.up = false;
         h.locked = false;
-        h.kind = 'yannik';
-        h.character.dataset.kind = 'yannik';
-        h.img.src = ART.yannikIdle;
+        h.kind = 'pedro';
+        h.character.dataset.kind = 'pedro';
+        h.img.src = ART.pedroIdle;
       }, 320);
     }, holdMs);
   }
 
-  function handleYannikHit(h) {
-    h.img.src = ART.yannikSurprised;
-    h.el.classList.add('whacked');
-
-    const now = performance.now();
+  function bumpCombo(now) {
     if (now - lastHitAt < COMBO_WINDOW_MS) {
       setCombo(Math.min(combo + 1, 9));
     } else {
       setCombo(1);
     }
     lastHitAt = now;
+    if (comboTimer) clearTimeout(comboTimer);
+    comboTimer = setTimeout(() => setCombo(1), COMBO_WINDOW_MS);
+  }
 
+  function handlePedroHit(h) {
+    h.img.src = ART.pedroSurprised;
+    h.el.classList.add('whacked');
+
+    bumpCombo(performance.now());
     const points = combo;
     setScore(score + points);
     spawnPopup(h.el, `+${points}${combo > 1 ? `  ×${combo}` : ''}`);
 
-    if (comboTimer) clearTimeout(comboTimer);
-    comboTimer = setTimeout(() => setCombo(1), COMBO_WINDOW_MS);
+    flashScreen('good');
+    clearHoleAfterReaction(h, PEDRO_REACTION_MS);
+  }
 
-    flashScreen(false);
-    clearHoleAfterReaction(h, YANNIK_REACTION_MS);
+  function handleTobiHit(h) {
+    h.img.src = ART.tobiShades;
+    h.el.classList.add('whacked', 'bonus');
+
+    bumpCombo(performance.now());
+    const points = Math.min(TOBI_MAX, TOBI_BASE * combo);
+    setScore(score + points);
+    spawnPopup(h.el, `+${points}  Tobi!`, false, true);
+
+    flashScreen('bonus');
+    clearHoleAfterReaction(h, TOBI_REACTION_MS);
   }
 
   function handleOliverHit(h) {
@@ -226,21 +257,22 @@
     lastHitAt = 0;
 
     spawnPopup(h.el, `−${PENALTY}`, true);
-    flashScreen(true);
+    flashScreen('bad');
     clearHoleAfterReaction(h, OLIVER_REACTION_MS);
   }
 
-  function flashScreen(penalty) {
-    document.body.classList.remove('flash', 'penalty');
+  function flashScreen(kind) {
+    document.body.classList.remove('flash', 'penalty', 'bonus');
     void document.body.offsetWidth;
     document.body.classList.add('flash');
-    if (penalty) document.body.classList.add('penalty');
-    setTimeout(() => document.body.classList.remove('flash', 'penalty'), 500);
+    if (kind === 'bad')   document.body.classList.add('penalty');
+    if (kind === 'bonus') document.body.classList.add('bonus');
+    setTimeout(() => document.body.classList.remove('flash', 'penalty', 'bonus'), 500);
   }
 
-  function spawnPopup(parent, text, penalty = false) {
+  function spawnPopup(parent, text, penalty = false, bonus = false) {
     const p = document.createElement('div');
-    p.className = 'score-popup' + (penalty ? ' penalty' : '');
+    p.className = 'score-popup' + (penalty ? ' penalty' : '') + (bonus ? ' bonus' : '');
     p.textContent = text;
     parent.appendChild(p);
     setTimeout(() => p.remove(), 1000);
@@ -261,10 +293,10 @@
       h.up = false;
       h.whacked = false;
       h.locked = false;
-      h.kind = 'yannik';
-      h.character.dataset.kind = 'yannik';
-      h.img.src = ART.yannikIdle;
-      h.el.classList.remove('up', 'whacked', 'penalty', 'oliver-active');
+      h.kind = 'pedro';
+      h.character.dataset.kind = 'pedro';
+      h.img.src = ART.pedroIdle;
+      h.el.classList.remove('up', 'whacked', 'penalty', 'oliver-active', 'tobi-active', 'bonus');
       if (h.hideTimer) { clearTimeout(h.hideTimer); h.hideTimer = null; }
       if (h.reactionTimer) { clearTimeout(h.reactionTimer); h.reactionTimer = null; }
       if (h.retreatTimer) { clearTimeout(h.retreatTimer); h.retreatTimer = null; }
@@ -296,7 +328,7 @@
     holes.forEach(h => {
       h.up = false;
       h.locked = false;
-      h.el.classList.remove('up', 'oliver-active');
+      h.el.classList.remove('up', 'oliver-active', 'tobi-active');
     });
 
     if (startBtnLabel) startBtnLabel.textContent = 'Begin Round';
@@ -319,7 +351,7 @@
       overlayMessage.textContent = 'A composed and accomplished performance.';
     } else if (score === 0) {
       overlayTitle.textContent = 'Round Concluded';
-      overlayMessage.textContent = 'Yannik proved elusive. Another round awaits.';
+      overlayMessage.textContent = 'Pedro proved elusive. Another round awaits.';
     } else {
       overlayTitle.textContent = 'Round Concluded';
       overlayMessage.textContent = 'A respectable showing. Pursue the ledger.';
@@ -379,9 +411,7 @@
         b.classList.toggle('active', active);
         b.setAttribute('aria-checked', active ? 'true' : 'false');
       });
-      if (wasRunning || overlayOpen) {
-        startGame();
-      }
+      if (wasRunning || overlayOpen) startGame();
     });
   });
 
