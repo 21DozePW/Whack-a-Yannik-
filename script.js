@@ -70,6 +70,65 @@
 
   Object.values(ART).forEach(src => { const i = new Image(); i.src = src; });
 
+  // ---- Audio (synthesised via Web Audio API; no asset files) ----
+  const audio = (() => {
+    let ctx = null;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    function ensure() {
+      if (!AC) return null;
+      if (!ctx) { try { ctx = new AC(); } catch (e) { return null; } }
+      if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) {} }
+      return ctx;
+    }
+    function tone({ freq, freqEnd, type = 'sine', start = 0, attack = 0.004, decay = 0.18, peak = 0.3, dest }) {
+      const c = ensure();
+      if (!c) return;
+      const t0 = c.currentTime + start;
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (freqEnd && freqEnd !== freq) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), t0 + attack + decay);
+      }
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(peak, t0 + attack);
+      g.gain.exponentialRampToValueAtTime(0.0008, t0 + attack + decay);
+      osc.connect(g).connect(dest || c.destination);
+      osc.start(t0);
+      osc.stop(t0 + attack + decay + 0.05);
+    }
+
+    // Pedro: cash register cha-ching — two stacked metallic chimes
+    function cashRegister() {
+      [0, 0.07].forEach((s, i) => {
+        const f1 = i === 0 ? 1200 : 1800;
+        const f2 = i === 0 ? 1600 : 2400;
+        tone({ freq: f1, type: 'triangle', start: s, attack: 0.002, decay: 0.22, peak: 0.32 });
+        tone({ freq: f2, type: 'triangle', start: s, attack: 0.002, decay: 0.18, peak: 0.20 });
+        tone({ freq: f1 * 2, type: 'sine', start: s, attack: 0.002, decay: 0.10, peak: 0.10 });
+      });
+    }
+
+    // Tobi: short bright Christmas bell — three quick chimes
+    function bell() {
+      [0, 0.07, 0.14].forEach((s, i) => {
+        const base = 2400 + i * 240;
+        tone({ freq: base, type: 'sine', start: s, attack: 0.001, decay: 0.18, peak: 0.30 });
+        tone({ freq: base * 1.5, type: 'sine', start: s, attack: 0.001, decay: 0.12, peak: 0.16 });
+        tone({ freq: base * 2, type: 'sine', start: s, attack: 0.001, decay: 0.08, peak: 0.08 });
+      });
+    }
+
+    // Oliver: descending "baaaahhh" buzzer
+    function buzzer() {
+      tone({ freq: 230, freqEnd: 110, type: 'sawtooth', start: 0, attack: 0.008, decay: 0.45, peak: 0.28 });
+      tone({ freq: 115, freqEnd: 70,  type: 'square',   start: 0, attack: 0.008, decay: 0.45, peak: 0.16 });
+    }
+
+    return { cashRegister, bell, buzzer, ensure };
+  })();
+
   function buildBoard() {
     board.innerHTML = '';
     holes = [];
@@ -230,6 +289,7 @@
     setScore(score + points);
     spawnPopup(h.el, `+${points}${combo > 1 ? `  ×${combo}` : ''}`);
 
+    audio.cashRegister();
     flashScreen('good');
     clearHoleAfterReaction(h, PEDRO_REACTION_MS);
   }
@@ -243,6 +303,7 @@
     setScore(score + points);
     spawnPopup(h.el, `+${points}  Tobi!`, false, true);
 
+    audio.bell();
     flashScreen('bonus');
     clearHoleAfterReaction(h, TOBI_REACTION_MS);
   }
@@ -257,6 +318,7 @@
     lastHitAt = 0;
 
     spawnPopup(h.el, `−${PENALTY}`, true);
+    audio.buzzer();
     flashScreen('bad');
     clearHoleAfterReaction(h, OLIVER_REACTION_MS);
   }
@@ -415,7 +477,7 @@
     });
   });
 
-  if (startBtn) startBtn.addEventListener('click', () => startGame());
+  if (startBtn) startBtn.addEventListener('click', () => { audio.ensure(); startGame(); });
 
   if (quitBtn) quitBtn.addEventListener('click', () => {
     if (!running) return;
