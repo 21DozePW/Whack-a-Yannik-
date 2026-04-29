@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#efe7d6" />
-  <title>Whack-a-Yannik — A Composed Game of Reflexes</title>
-  <meta name="description" content="An elegant browser game of reflexes. Strike Yannik for points. Avoid Oliver. Compose a streak. Established 2026." />
+  <meta name="theme-color" content="#0b1d4a" />
+  <title>Whack BJSS — A Modern Game of Reflexes</title>
+  <meta name="description" content="A modern browser game of reflexes. Strike Pedro for points. Catch Tobi for a bonus. Avoid Oliver." />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Whack-a-Yannik" />
-  <meta property="og:description" content="A composed game of reflexes." />
+  <meta property="og:title" content="Whack BJSS" />
+  <meta property="og:description" content="Strike Pedro. Catch Tobi. Avoid Oliver." />
   <meta property="og:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
   <meta property="og:image:secure_url" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Whack-a-Yannik" />
+  <meta property="og:image:alt" content="Whack BJSS" />
   <meta property="og:url" content="https://whack-a-yannik.vercel.app/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Whack-a-Yannik" />
-  <meta name="twitter:description" content="A composed game of reflexes." />
+  <meta name="twitter:title" content="Whack BJSS" />
+  <meta name="twitter:description" content="Strike Pedro. Catch Tobi. Avoid Oliver." />
   <meta name="twitter:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
 
   <link rel="icon" type="image/png" href="/thumbnail.png" />
@@ -27,28 +27,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="landing">
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="/" aria-label="Whack-a-Yannik">
-        <span class="mark" aria-hidden="true">
-          <svg viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 5 L36 5 L36 26 C36 36 24.5 43.5 20 45.5 C15.5 43.5 4 36 4 26 Z"
-                  fill="#0b1d4a" stroke="#b89557" stroke-width="0.8"/>
-            <line x1="6" y1="13" x2="34" y2="13" stroke="#b89557" stroke-width="0.4" opacity="0.7"/>
-            <line x1="6" y1="36" x2="34" y2="36" stroke="#b89557" stroke-width="0.4" opacity="0.7"/>
-            <text x="20" y="29" text-anchor="middle" fill="#b89557"
-                  font-family="Cormorant Garamond, Georgia, serif"
-                  font-weight="600" font-size="13" letter-spacing="0.5">WY</text>
-          </svg>
-        </span>
+      <a class="brand" href="/" aria-label="Whack BJSS">
         <span class="wordmark">
-          <span class="wordmark-name">Whack-a-Yannik</span>
-          <span class="wordmark-sub">Private Reflex Series</span>
+          <span class="wordmark-name">Whack <em class="wordmark-mark">BJSS</em></span>
+          <span class="wordmark-sub">Reflex Series · 2026</span>
         </span>
       </a>
       <nav class="topnav" aria-label="Primary">
@@ -60,12 +49,11 @@
   </header>
 
   <main>
-    <!-- Hero -->
     <section class="landing-hero">
       <div class="landing-hero-inner">
-        <p class="eyebrow"><span class="num">01</span> · Edition 02 · Established MMXXVI</p>
-        <h1 class="display xl">A Composed Game<br/>of Reflexes.</h1>
-        <p class="lede">Yannik appears for a moment, then he is gone. Tap him before he retreats. Beware Oliver — he joins the round uninvited, and a misplaced strike will be debited from your account.</p>
+        <p class="eyebrow">A Modern Game of Reflexes</p>
+        <h1 class="display xl">Whack <em class="accent">BJSS</em>.<br/>Score the Floor.</h1>
+        <p class="lede">Strike Pedro for points. Compose a streak. Catch Tobi when he flashes — a rare opportunity worth as much as forty‑five. Beware Oliver: a misplaced strike will be debited.</p>
         <div class="hero-actions">
           <a href="/play" class="btn-primary"><span class="btn-label">Begin a Round</span></a>
           <a href="#how" class="btn-ghost">Read the Rules</a>
@@ -75,12 +63,14 @@
             <span class="meta-num">30s</span>
             <span class="meta-label">Per round</span>
           </div>
-          <div class="hero-divider"></div>
           <div>
             <span class="meta-num">×9</span>
             <span class="meta-label">Maximum streak</span>
           </div>
-          <div class="hero-divider"></div>
+          <div>
+            <span class="meta-num">45</span>
+            <span class="meta-label">Tobi top reward</span>
+          </div>
           <div>
             <span class="meta-num">04</span>
             <span class="meta-label">Tiers of difficulty</span>
@@ -89,94 +79,103 @@
       </div>
     </section>
 
-    <!-- Cast -->
     <section class="section section-cast" id="cast">
       <div class="section-inner">
         <header class="section-header">
-          <p class="eyebrow"><span class="num">02</span> · The Cast</p>
-          <h2 class="display">Two gentlemen.<br/>One pays. One does not.</h2>
+          <p class="eyebrow">The Cast</p>
+          <h2 class="display">Three gentlemen.<br/>Choose wisely.</h2>
         </header>
 
-        <div class="cast-grid">
-          <article class="cast-feature">
-            <div class="cast-portrait-wrap cast-portrait-good">
-              <img src="yannik-smile.png" alt="Yannik" class="cast-portrait-lg" />
-              <img src="yannik-surprised.png" alt="Yannik startled" class="cast-portrait-lg cast-portrait-alt" />
+        <div class="cast-grid-3">
+          <article class="cast-card-modern cast-good">
+            <div class="cast-portrait-wrap">
+              <img src="pedro-smile.png" alt="Pedro" class="cast-portrait-lg" />
+              <img src="pedro-surprised.png" alt="Pedro startled" class="cast-portrait-lg cast-portrait-alt" />
             </div>
-            <div class="cast-feature-text">
-              <p class="eyebrow">Strike</p>
-              <h3 class="cast-name display small">Yannik</h3>
-              <p class="cast-feature-lede">The mark of the round. Each strike awards one point. Successive hits within a brief window compose a streak — each subsequent strike is worth more than the last, up to a multiplier of ×9.</p>
-              <ul class="cast-list">
-                <li><span class="cast-list-num">+1</span><span>Per strike</span></li>
-                <li><span class="cast-list-num">×9</span><span>Maximum streak multiplier</span></li>
-                <li><span class="cast-list-num">1.4s</span><span>To extend a streak</span></li>
-              </ul>
-            </div>
+            <span class="cast-tag tag-good">Strike</span>
+            <h3 class="cast-name">Pedro</h3>
+            <p class="cast-meta">Standard mark. +1 per strike, with streak multipliers up to ×9.</p>
+            <ul class="cast-list-modern">
+              <li><span class="cast-num">+1</span><span>Per strike</span></li>
+              <li><span class="cast-num">×9</span><span>Streak ceiling</span></li>
+              <li><span class="cast-num">1.4s</span><span>To extend</span></li>
+            </ul>
           </article>
 
-          <article class="cast-feature reverse">
-            <div class="cast-portrait-wrap cast-portrait-bad">
+          <article class="cast-card-modern cast-bonus">
+            <div class="cast-portrait-wrap">
+              <img src="tobi-smile.png" alt="Tobi" class="cast-portrait-lg" />
+              <img src="tobi-shades.png" alt="Tobi (in shades)" class="cast-portrait-lg cast-portrait-alt" />
+            </div>
+            <span class="cast-tag tag-bonus">Catch</span>
+            <h3 class="cast-name">Tobi</h3>
+            <p class="cast-meta">A rare appearance. Strike him fast for a windfall — fifteen at minimum, forty‑five at peak streak.</p>
+            <ul class="cast-list-modern">
+              <li><span class="cast-num gold">+15</span><span>Floor</span></li>
+              <li><span class="cast-num gold">+45</span><span>Ceiling</span></li>
+              <li><span class="cast-num gold">5–10%</span><span>Spawn chance</span></li>
+            </ul>
+          </article>
+
+          <article class="cast-card-modern cast-bad">
+            <div class="cast-portrait-wrap">
               <img src="oliver-smile.png" alt="Oliver" class="cast-portrait-lg" />
               <img src="oliver-frown.png" alt="Oliver displeased" class="cast-portrait-lg cast-portrait-alt" />
             </div>
-            <div class="cast-feature-text">
-              <p class="eyebrow eyebrow-cool">Avoid</p>
-              <h3 class="cast-name display small">Oliver</h3>
-              <p class="cast-feature-lede">Uninvited. He arrives without notice and smiles indistinguishably. A strike upon him is a costly mistake — five points and your streak in the same blow. Discretion is the chief virtue.</p>
-              <ul class="cast-list">
-                <li><span class="cast-list-num cool">−5</span><span>Per misplaced strike</span></li>
-                <li><span class="cast-list-num cool">×1</span><span>Streak resets at once</span></li>
-                <li><span class="cast-list-num cool">15–34%</span><span>Likelihood per appearance</span></li>
-              </ul>
-            </div>
+            <span class="cast-tag tag-bad">Avoid</span>
+            <h3 class="cast-name">Oliver</h3>
+            <p class="cast-meta">Uninvited. He smiles indistinguishably. A mistaken strike costs five and your streak with it.</p>
+            <ul class="cast-list-modern">
+              <li><span class="cast-num crimson">−5</span><span>Per misplaced strike</span></li>
+              <li><span class="cast-num crimson">×1</span><span>Streak resets</span></li>
+              <li><span class="cast-num crimson">15–34%</span><span>Spawn likelihood</span></li>
+            </ul>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- Pull quote -->
     <section class="pullquote">
-      <blockquote>
-        <p>Composure is not the absence of motion. It is the discipline of moving only when one ought to.</p>
-        <cite>— House Notes, MMXXVI</cite>
-      </blockquote>
+      <div class="pullquote-inner">
+        <blockquote>
+          <p>Composure is not the absence of motion. It is the discipline of moving only when one ought to.</p>
+          <cite>House Notes · MMXXVI</cite>
+        </blockquote>
+      </div>
     </section>
 
-    <!-- How to play -->
     <section class="section section-how" id="how">
       <div class="section-inner">
         <header class="section-header">
-          <p class="eyebrow"><span class="num">03</span> · How to Play</p>
+          <p class="eyebrow">How to Play</p>
           <h2 class="display">Four pillars<br/>of a good round.</h2>
         </header>
 
-        <div class="pillars">
-          <article class="pillar">
+        <div class="pillars-modern">
+          <article class="pillar-card">
             <span class="pillar-num">01</span>
             <h3 class="pillar-title">Choose your tier</h3>
-            <p>Easy through Insane. You may switch at any time — including mid-round, which surrenders the present game and commences a fresh one.</p>
+            <p>Easy through Insane. Switch any time — including mid‑round, which surrenders the present game and starts a fresh one.</p>
           </article>
-          <article class="pillar">
+          <article class="pillar-card">
             <span class="pillar-num">02</span>
-            <h3 class="pillar-title">Strike Yannik</h3>
-            <p>Tap him as he appears. He retreats quickly. Each successful strike is awarded a point; rapid succession compounds your reward.</p>
+            <h3 class="pillar-title">Strike Pedro</h3>
+            <p>Tap him as he appears. He retreats quickly. Successive hits within 1.4 seconds compose a streak — each strike is worth more than the last.</p>
           </article>
-          <article class="pillar">
+          <article class="pillar-card pillar-bonus">
             <span class="pillar-num">03</span>
-            <h3 class="pillar-title">Avoid Oliver</h3>
-            <p>He bears a passing resemblance. Read the room. A mistaken strike costs you five points and the streak you have so carefully composed.</p>
+            <h3 class="pillar-title">Catch Tobi</h3>
+            <p>He flashes briefly and rarely. A successful strike pays fifteen at minimum, up to forty‑five if your streak is hot.</p>
           </article>
-          <article class="pillar">
+          <article class="pillar-card">
             <span class="pillar-num">04</span>
-            <h3 class="pillar-title">Pursue the ledger</h3>
-            <p>Thirty seconds per round. Your personal best is preserved on this device. The round restarts of its own accord — should you wish, hold the countdown.</p>
+            <h3 class="pillar-title">Avoid Oliver</h3>
+            <p>He looks the part. Read carefully. A wrong strike costs five points and ends your streak.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- CTA banner -->
     <section class="cta-banner">
       <div class="cta-banner-inner">
         <div>
@@ -189,8 +188,8 @@
 
     <footer class="footer">
       <div class="footer-inner">
-        <span class="footer-brand">Whack-a-Yannik</span>
-        <span class="footer-meta">Made with restraint · MMXXVI</span>
+        <span class="footer-brand">Whack BJSS</span>
+        <span class="footer-meta">Reflex Series · MMXXVI</span>
       </div>
     </footer>
   </main>

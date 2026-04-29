@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#efe7d6" />
-  <title>Round in Play — Whack-a-Yannik</title>
-  <meta name="description" content="A composed game of reflexes. Tap Yannik for points. Avoid Oliver." />
+  <meta name="theme-color" content="#0b1d4a" />
+  <title>Round in Play — Whack BJSS</title>
+  <meta name="description" content="A modern game of reflexes. Strike Pedro for points. Catch Tobi for a bonus. Avoid Oliver." />
 
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Whack-a-Yannik" />
-  <meta property="og:description" content="A composed game of reflexes." />
+  <meta property="og:title" content="Whack BJSS" />
+  <meta property="og:description" content="A modern game of reflexes." />
   <meta property="og:image" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
   <meta property="og:image:secure_url" content="https://whack-a-yannik.vercel.app/thumbnail.png" />
   <meta property="og:image:type" content="image/png" />
@@ -22,28 +22,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="/" aria-label="Whack-a-Yannik">
-        <span class="mark" aria-hidden="true">
-          <svg viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 5 L36 5 L36 26 C36 36 24.5 43.5 20 45.5 C15.5 43.5 4 36 4 26 Z"
-                  fill="#0b1d4a" stroke="#b89557" stroke-width="0.8"/>
-            <line x1="6" y1="13" x2="34" y2="13" stroke="#b89557" stroke-width="0.4" opacity="0.7"/>
-            <line x1="6" y1="36" x2="34" y2="36" stroke="#b89557" stroke-width="0.4" opacity="0.7"/>
-            <text x="20" y="29" text-anchor="middle" fill="#b89557"
-                  font-family="Cormorant Garamond, Georgia, serif"
-                  font-weight="600" font-size="13" letter-spacing="0.5">WY</text>
-          </svg>
-        </span>
+      <a class="brand" href="/" aria-label="Whack BJSS">
         <span class="wordmark">
-          <span class="wordmark-name">Whack-a-Yannik</span>
-          <span class="wordmark-sub">Private Reflex Series</span>
+          <span class="wordmark-name">Whack <em class="wordmark-mark">BJSS</em></span>
+          <span class="wordmark-sub">Reflex Series · 2026</span>
         </span>
       </a>
       <nav class="topnav" aria-label="Primary">
@@ -55,9 +44,9 @@
 
   <main class="page">
     <section class="play-hero">
-      <p class="eyebrow"><span class="num">02</span> · Round Underway</p>
+      <p class="eyebrow">Round Underway</p>
       <h1 class="display">The Floor is Yours.</h1>
-      <p class="lede">Strike Yannik for points. Avoid Oliver, who appears unbidden. Switch tier whenever you wish — the round will reset accordingly.</p>
+      <p class="lede">Strike Pedro for points. Catch Tobi when he flashes. Avoid Oliver. Switch tier whenever you wish — the round will reset accordingly.</p>
     </section>
 
     <section class="dashboard" aria-label="Performance">
@@ -102,21 +91,29 @@
 
     <section class="board" id="board" aria-label="Game board"></section>
 
-    <section class="cast" aria-label="Cast of characters">
-      <article class="cast-card cast-good">
-        <img src="yannik-smile.png" alt="Yannik" class="cast-portrait" />
-        <div class="cast-text">
-          <span class="eyebrow">Strike</span>
-          <h3 class="cast-name">Yannik</h3>
-          <p class="cast-meta">+1 point · streak multipliers up to ×9</p>
+    <section class="cast-row" aria-label="Cast quick reference">
+      <article class="cast-mini cast-good">
+        <img src="pedro-smile.png" alt="Pedro" class="cast-mini-portrait" />
+        <div>
+          <span class="cast-tag tag-good">Strike</span>
+          <h3 class="cast-mini-name">Pedro</h3>
+          <p class="cast-mini-meta">+1 · streak ×9</p>
         </div>
       </article>
-      <article class="cast-card cast-bad">
-        <img src="oliver-smile.png" alt="Oliver" class="cast-portrait" />
-        <div class="cast-text">
-          <span class="eyebrow">Avoid</span>
-          <h3 class="cast-name">Oliver</h3>
-          <p class="cast-meta">−5 points · resets your streak</p>
+      <article class="cast-mini cast-bonus">
+        <img src="tobi-smile.png" alt="Tobi" class="cast-mini-portrait" />
+        <div>
+          <span class="cast-tag tag-bonus">Catch</span>
+          <h3 class="cast-mini-name">Tobi</h3>
+          <p class="cast-mini-meta">+15 to +45 · rare</p>
+        </div>
+      </article>
+      <article class="cast-mini cast-bad">
+        <img src="oliver-smile.png" alt="Oliver" class="cast-mini-portrait" />
+        <div>
+          <span class="cast-tag tag-bad">Avoid</span>
+          <h3 class="cast-mini-name">Oliver</h3>
+          <p class="cast-mini-meta">−5 · streak resets</p>
         </div>
       </article>
     </section>
@@ -125,8 +122,8 @@
 
     <footer class="footer">
       <div class="footer-inner">
-        <span class="footer-brand">Whack-a-Yannik</span>
-        <span class="footer-meta">Made with restraint · MMXXVI</span>
+        <span class="footer-brand">Whack BJSS</span>
+        <span class="footer-meta">Reflex Series · MMXXVI</span>
       </div>
     </footer>
   </main>
