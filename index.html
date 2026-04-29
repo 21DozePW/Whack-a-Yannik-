@@ -30,6 +30,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="style.css" />
+
+  <script>
+    // If opened with a hash (e.g. a bookmark saved at #cast), strip it
+    // and force-scroll to the top so the landing page always opens
+    // at the hero. In-page anchor clicks (Cast / How to Play) still
+    // work normally because they do not trigger a fresh page load.
+    (function () {
+      if (location.hash) {
+        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+        window.addEventListener('DOMContentLoaded', function () { window.scrollTo(0, 0); });
+        window.addEventListener('load', function () { window.scrollTo(0, 0); });
+      }
+    })();
+  </script>
 </head>
 <body class="landing">
   <header class="topbar">
