@@ -70,6 +70,143 @@
 
   Object.values(ART).forEach(src => { const i = new Image(); i.src = src; });
 
+  // ---- Supabase scoreboard ----
+  const SUPABASE_URL = 'https://ihbdooybrtwisqtirwqn.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_yVp_NBi-l2kP2fWZHJobkA_YfL-T482';
+  const NAME_KEY = 'whackBjssName';
+
+  const submitForm   = document.getElementById('overlaySubmit');
+  const playerName   = document.getElementById('playerName');
+  const submitBtn    = document.getElementById('submitScoreBtn');
+  const submitStatus = document.getElementById('submitStatus');
+  const lbListEl     = document.getElementById('leaderboardList');
+  const lbTierBtns   = Array.from(document.querySelectorAll('.lb-tier-btn'));
+
+  let supa = null;
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    try { supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }
+    catch (e) { supa = null; }
+  }
+
+  let scoreSubmitted = false;
+  let lbTier = 'all';
+
+  if (playerName) {
+    const saved = localStorage.getItem(NAME_KEY);
+    if (saved) playerName.value = saved;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+  function timeAgo(iso) {
+    const d = new Date(iso);
+    const s = Math.max(0, (Date.now() - d.getTime()) / 1000);
+    if (s < 45) return 'just now';
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    if (s < 30 * 86400) return `${Math.floor(s / 86400)}d ago`;
+    return d.toLocaleDateString();
+  }
+
+  function renderLeaderboard(rows) {
+    if (!lbListEl) return;
+    if (!rows || rows.length === 0) {
+      lbListEl.innerHTML = `<li class="leaderboard-empty">No scores yet — be the first.</li>`;
+      return;
+    }
+    lbListEl.innerHTML = rows.map((r, i) => `
+      <li class="lb-row">
+        <span class="lb-rank">${i + 1}</span>
+        <span class="lb-name">${escapeHtml(r.name)}</span>
+        <span class="lb-tier lb-tier-${escapeHtml(r.tier)}">${escapeHtml(r.tier)}</span>
+        <span class="lb-score">${Number(r.score).toLocaleString()}</span>
+        <span class="lb-time">${timeAgo(r.created_at)}</span>
+      </li>
+    `).join('');
+  }
+
+  async function refreshLeaderboard() {
+    if (!supa || !lbListEl) {
+      if (lbListEl) lbListEl.innerHTML = `<li class="leaderboard-empty">Leaderboard unavailable.</li>`;
+      return;
+    }
+    lbListEl.innerHTML = `<li class="leaderboard-empty">Loading…</li>`;
+    let q = supa
+      .from('scores')
+      .select('name, score, tier, created_at')
+      .order('score', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(10);
+    if (lbTier !== 'all') q = q.eq('tier', lbTier);
+    const { data, error } = await q;
+    if (error) {
+      lbListEl.innerHTML = `<li class="leaderboard-empty">Couldn't load scores.</li>`;
+      return;
+    }
+    renderLeaderboard(data);
+  }
+
+  async function submitScoreToServer() {
+    if (!supa) {
+      if (submitStatus) submitStatus.textContent = 'Scoreboard offline.';
+      return;
+    }
+    if (scoreSubmitted) return;
+    const name = (playerName && playerName.value || '').trim();
+    if (!name) {
+      if (submitStatus) submitStatus.textContent = 'Please enter a name.';
+      if (playerName) playerName.focus();
+      return;
+    }
+    if (score <= 0) {
+      if (submitStatus) submitStatus.textContent = 'Score must be greater than zero.';
+      return;
+    }
+
+    localStorage.setItem(NAME_KEY, name);
+    if (submitBtn) submitBtn.disabled = true;
+    if (submitStatus) submitStatus.textContent = 'Saving…';
+
+    const { error } = await supa.from('scores').insert({ name, score, tier: difficulty });
+    if (error) {
+      if (submitStatus) submitStatus.textContent = 'Could not save: ' + (error.message || 'unknown error');
+      if (submitBtn) submitBtn.disabled = false;
+      return;
+    }
+
+    scoreSubmitted = true;
+    if (submitStatus) submitStatus.textContent = 'Saved to the ledger.';
+    if (submitForm) submitForm.classList.add('saved');
+    refreshLeaderboard();
+  }
+
+  if (submitForm) {
+    submitForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitScoreToServer();
+    });
+  }
+
+  lbTierBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.lbTier;
+      if (t === lbTier) return;
+      lbTier = t;
+      lbTierBtns.forEach(b => {
+        const active = b === btn;
+        b.classList.toggle('active', active);
+        b.setAttribute('aria-checked', active ? 'true' : 'false');
+      });
+      refreshLeaderboard();
+    });
+  });
+
+  // Initial load
+  if (supa && lbListEl) refreshLeaderboard();
+
   // ---- Audio (synthesised via Web Audio API; no asset files) ----
   const audio = (() => {
     let ctx = null;
@@ -376,6 +513,11 @@
     lastHitAt = 0;
     setTime(GAME_DURATION);
     running = true;
+    scoreSubmitted = false;
+
+    if (submitForm) submitForm.classList.remove('saved');
+    if (submitBtn) submitBtn.disabled = false;
+    if (submitStatus) submitStatus.textContent = '';
 
     if (startBtnLabel) startBtnLabel.textContent = 'Restart Round';
     if (quitBtn) quitBtn.classList.remove('hidden');
@@ -421,6 +563,16 @@
 
     finalScoreEl.textContent = score;
     finalBestEl.textContent = best;
+
+    // Show submit form only if there is a meaningful score
+    if (submitForm) {
+      const showForm = !abandoned && score > 0 && supa;
+      submitForm.style.display = showForm ? '' : 'none';
+      if (showForm && playerName && !playerName.value) {
+        playerName.value = localStorage.getItem(NAME_KEY) || '';
+      }
+    }
+
     overlay.classList.remove('hidden');
 
     startAutoRestart();

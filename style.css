@@ -1433,3 +1433,152 @@ body.flash::after {
   .landing-hero { padding: 32px 0 40px; }
   .play-hero { padding-bottom: 0; }
 }
+
+/* =====================================================================
+   Leaderboard + score submit
+   ===================================================================== */
+
+.leaderboard {
+  background: #ffffff;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 28px 28px 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.leaderboard-header { display: flex; flex-direction: column; gap: 4px; }
+.leaderboard-header .display { margin: 0; }
+.lb-seg { align-self: flex-start; flex-wrap: wrap; }
+.lb-tier-btn { padding: 8px 14px; }
+
+.leaderboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.leaderboard-list .leaderboard-empty {
+  padding: 20px 0;
+  text-align: center;
+  color: var(--ink-3);
+  font-style: italic;
+  font-family: var(--serif);
+  font-size: 1rem;
+}
+.lb-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto auto auto;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 4px;
+  border-top: 1px solid var(--hairline-soft);
+}
+.lb-row:first-child { border-top: 0; }
+.lb-rank {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--navy);
+  text-align: center;
+}
+.lb-row:nth-child(1) .lb-rank { color: var(--gold); font-size: 1.3rem; }
+.lb-row:nth-child(2) .lb-rank { color: var(--gold-2); }
+.lb-row:nth-child(3) .lb-rank { color: var(--gold-2); }
+.lb-name {
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-tier {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--navy-soft);
+  color: var(--navy);
+}
+.lb-tier-easy   { background: rgba(184, 149, 87, 0.10); color: #8a6d33; }
+.lb-tier-normal { background: var(--navy-soft); color: var(--navy); }
+.lb-tier-hard   { background: rgba(11, 29, 74, 0.18); color: var(--navy); }
+.lb-tier-insane { background: var(--crimson-soft); color: var(--crimson); }
+.lb-score {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--ink);
+  text-align: right;
+  min-width: 56px;
+}
+.lb-time {
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  white-space: nowrap;
+}
+
+/* Submit form inside the overlay */
+.overlay-submit {
+  margin: 4px 0 22px;
+  padding: 16px 16px 14px;
+  background: rgba(11, 29, 74, 0.04);
+  border: 1px solid var(--hairline-soft);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.overlay-submit-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+.overlay-submit-row { display: flex; gap: 8px; }
+.overlay-submit input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--hairline);
+  background: #fff;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.overlay-submit input:focus {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(11, 29, 74, 0.15);
+}
+.overlay-submit .btn-primary { padding: 11px 18px; flex: 0 0 auto; }
+.overlay-submit-status {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  min-height: 1.1em;
+}
+.overlay-submit.saved { background: rgba(184, 149, 87, 0.10); border-color: var(--gold); }
+.overlay-submit.saved .overlay-submit-status { color: var(--gold); font-weight: 600; }
+.overlay-submit.saved .overlay-submit-row { display: none; }
+
+@media (max-width: 760px) {
+  .leaderboard { padding: 22px 18px; gap: 14px; }
+  .lb-row { grid-template-columns: 28px 1fr auto auto; gap: 10px; padding: 12px 2px; }
+  .lb-time { display: none; }
+  .lb-score { font-size: 1.05rem; min-width: 44px; }
+  .overlay-submit-row { flex-direction: column; }
+  .overlay-submit .btn-primary { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .lb-row { grid-template-columns: 24px 1fr auto auto; gap: 8px; }
+  .lb-tier { display: none; }
+}
