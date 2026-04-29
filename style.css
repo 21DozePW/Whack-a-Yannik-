@@ -1140,3 +1140,296 @@ body.flash::after {
 
   .topnav .topnav-cta { padding: 6px 12px; }
 }
+
+/* =====================================================================
+   Modern landing components (cast cards, pillars, wordmark mark, tags)
+   ===================================================================== */
+
+.wordmark-mark {
+  font-family: var(--serif);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--navy);
+}
+
+.display .accent {
+  font-style: italic;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.cast-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.cast-card-modern {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.cast-card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(11, 29, 74, 0.28);
+}
+.cast-card-modern .cast-portrait-wrap {
+  position: relative;
+  width: 70%;
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+}
+.cast-card-modern .cast-portrait-lg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: opacity 0.3s ease;
+}
+.cast-card-modern.cast-good .cast-portrait-lg {
+  box-shadow: 0 0 0 3px rgba(184, 149, 87, 0.55), 0 12px 24px rgba(11, 29, 74, 0.10);
+}
+.cast-card-modern.cast-bonus .cast-portrait-lg {
+  box-shadow: 0 0 0 3px var(--gold), 0 12px 24px rgba(184, 149, 87, 0.30);
+}
+.cast-card-modern.cast-bad .cast-portrait-lg {
+  box-shadow: 0 0 0 3px rgba(139, 31, 42, 0.50), 0 12px 24px rgba(11, 29, 74, 0.10);
+}
+.cast-card-modern .cast-portrait-alt { opacity: 0; }
+.cast-card-modern:hover .cast-portrait-alt { opacity: 1; }
+
+.cast-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--navy-soft);
+  color: var(--navy);
+  align-self: flex-start;
+}
+.tag-good   { background: rgba(11, 29, 74, 0.08);  color: var(--navy); }
+.tag-bonus  { background: var(--gold-soft);        color: var(--gold); }
+.tag-bad    { background: var(--crimson-soft);     color: var(--crimson); }
+
+.cast-card-modern .cast-name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.1;
+}
+.cast-card-modern .cast-meta {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 0 0 12px;
+}
+
+.cast-list-modern {
+  list-style: none;
+  margin: auto 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--hairline-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cast-list-modern li {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  font-size: 0.88rem;
+  color: var(--ink-2);
+}
+.cast-num {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.2rem;
+  min-width: 60px;
+  color: var(--navy);
+  letter-spacing: -0.005em;
+}
+.cast-num.gold    { color: var(--gold); }
+.cast-num.crimson { color: var(--crimson); }
+
+/* Pillars grid for "How to Play" */
+.pillars-modern {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.pillar-card {
+  background: #ffffff;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 26px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pillar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.pillar-card.pillar-bonus { border-color: var(--gold); }
+.pillar-card .pillar-num {
+  display: inline-block;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.6rem;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.pillar-card.pillar-bonus .pillar-num { color: var(--gold); }
+.pillar-card .pillar-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--ink);
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+.pillar-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.pullquote-inner { max-width: 880px; margin: 0 auto; }
+
+/* =====================================================================
+   Tablet & phone responsiveness (iPad portrait/landscape, iPhone)
+   ===================================================================== */
+
+/* Cap the game board so it always fits within the viewport on tablets
+   and phones, while staying square. Use the smaller of available width
+   and 78% of viewport height — works on iPad portrait, iPad landscape,
+   iPhone portrait and iPhone landscape. */
+.board {
+  width: 100%;
+  max-width: min(640px, 78vh);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* iPad-ish range: portrait iPad mini (768) up through iPad Pro 11" */
+@media (max-width: 1024px) {
+  .topbar-inner { padding: 16px 22px; }
+  .page { padding: 40px 22px 28px; gap: 32px; }
+
+  .landing-hero { padding: 56px 0 64px; }
+  .display.xl { font-size: clamp(2.4rem, 6vw, 4rem); }
+  .hero-meta { gap: 24px; }
+
+  .section { padding: 72px 0; }
+  .section-header .display { font-size: clamp(1.8rem, 3.5vw, 2.4rem); }
+
+  .cast-grid-3 { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .cast-grid-3 > .cast-card-modern:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .pillars-modern { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+  /* Game board on tablets — keep readable, leave room for HUD */
+  .board { max-width: min(560px, 70vh); }
+
+  /* Dashboard slightly tighter to fit header chrome */
+  .metric { padding: 18px 18px; }
+  .metric-value { font-size: 1.6rem; }
+
+  .controls { padding: 22px; }
+}
+
+/* Slightly bigger phones — keep desktop-ish HUD readable */
+@media (max-width: 760px) {
+  .cast-grid-3 { grid-template-columns: 1fr; gap: 16px; }
+  .cast-grid-3 > .cast-card-modern:nth-child(3) { max-width: none; }
+  .cast-card-modern { padding: 22px 20px 20px; }
+  .cast-card-modern .cast-portrait-wrap { width: 56%; max-width: 180px; }
+  .cast-card-modern .cast-name { font-size: 1.4rem; }
+
+  .pillars-modern { grid-template-columns: 1fr; gap: 12px; }
+  .pillar-card { padding: 20px 18px; }
+
+  /* Board: ensure it fits without forcing scroll */
+  .board { max-width: min(100%, 78vh); padding: 14px; gap: 10px; }
+
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn-primary,
+  .hero-actions .btn-ghost { width: 100%; }
+}
+
+/* iPhone portrait & smaller */
+@media (max-width: 480px) {
+  .topbar-inner { padding: 12px 14px; }
+  .topnav { gap: 14px; }
+  .wordmark-name { font-size: 1.05rem; }
+
+  .page { padding: 24px 14px 20px; gap: 22px; }
+
+  .landing-hero { padding: 32px 0 40px; }
+  .landing-hero-inner { padding: 0 14px; }
+  .display.xl { font-size: clamp(1.9rem, 8vw, 2.6rem); }
+  .lede { font-size: 1rem; }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+    margin-top: 28px;
+    padding-top: 18px;
+  }
+  .meta-num { font-size: 1.4rem; }
+
+  .section { padding: 44px 0; }
+  .section-header .display { font-size: clamp(1.5rem, 5vw, 2rem); }
+  .section-header { margin-bottom: 24px; }
+
+  /* Dashboard: keep 4 columns but very compact, or stack 2x2 */
+  .dashboard { grid-template-columns: repeat(2, 1fr); }
+  .metric { padding: 12px 14px; gap: 6px; }
+  .metric-label { font-size: 0.6rem; letter-spacing: 0.16em; }
+  .metric-value { font-size: 1.25rem; }
+
+  .controls { padding: 16px; gap: 12px; }
+  .seg-btn { padding: 8px 10px; font-size: 0.66rem; letter-spacing: 0.1em; }
+  .btn-primary, .btn-ghost { padding: 10px 16px; font-size: 0.7rem; letter-spacing: 0.12em; }
+
+  .board { padding: 10px; gap: 8px; max-width: min(100%, 70vh); }
+
+  .play-hero .display { font-size: clamp(1.6rem, 6vw, 2rem); }
+  .play-hero .lede { font-size: 0.95rem; }
+
+  .overlay-card { padding: 28px 22px 22px; }
+  .overlay-num { font-size: 1.7rem; }
+}
+
+/* Landscape phones / very short viewports — keep board reachable */
+@media (max-height: 520px) and (orientation: landscape) {
+  .board { max-width: min(100%, 86vh); }
+  .landing-hero { padding: 32px 0 40px; }
+  .play-hero { padding-bottom: 0; }
+}
