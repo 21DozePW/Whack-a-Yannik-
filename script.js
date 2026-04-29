@@ -2,7 +2,6 @@
   const HOLES = 9;
   const GAME_DURATION = 30;
   const COMBO_WINDOW_MS = 1400;
-  const AUTO_RESTART_SECONDS = 5;
   const TIME_WARNING = 10;
   const PENALTY = 5;
   const PEDRO_REACTION_MS = 520;
@@ -47,9 +46,7 @@
   const finalScoreEl = document.getElementById('finalScore');
   const finalBestEl = document.getElementById('finalBest');
   const playAgainBtn = document.getElementById('playAgainBtn');
-  const cancelAutoBtn = document.getElementById('cancelAutoBtn');
-  const countdownEl = document.getElementById('countdown');
-  const segButtons = Array.from(document.querySelectorAll('.seg-btn'));
+  const segButtons = Array.from(document.querySelectorAll('.seg-btn:not(.lb-tier-btn)'));
 
   let holes = [];
   let score = 0;
@@ -60,8 +57,6 @@
   let running = false;
   let tickTimer = null;
   let scheduleTimer = null;
-  let countdownTimer = null;
-  let countdownLeft = 0;
   let difficulty = 'normal';
 
   const BEST_KEY = 'whackBjssBest';
@@ -503,7 +498,6 @@
   }
 
   function startGame() {
-    cancelAutoRestart();
     cleanupTimers();
     clearBoardState();
     if (overlay) overlay.classList.add('hidden');
@@ -574,33 +568,6 @@
     }
 
     overlay.classList.remove('hidden');
-
-    startAutoRestart();
-  }
-
-  function startAutoRestart() {
-    cancelAutoRestart();
-    if (cancelAutoBtn) {
-      cancelAutoBtn.textContent = 'Hold';
-      cancelAutoBtn.disabled = false;
-    }
-    countdownLeft = AUTO_RESTART_SECONDS;
-    if (countdownEl) countdownEl.textContent = countdownLeft;
-    countdownTimer = setInterval(() => {
-      countdownLeft -= 1;
-      if (countdownEl) countdownEl.textContent = countdownLeft;
-      if (countdownLeft <= 0) {
-        cancelAutoRestart();
-        startGame();
-      }
-    }, 1000);
-  }
-
-  function cancelAutoRestart() {
-    if (countdownTimer) {
-      clearInterval(countdownTimer);
-      countdownTimer = null;
-    }
   }
 
   function cleanupTimers() {
@@ -613,6 +580,7 @@
       if (h.retreatTimer) { clearTimeout(h.retreatTimer); h.retreatTimer = null; }
     });
   }
+
 
   segButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -637,15 +605,6 @@
   });
 
   if (playAgainBtn) playAgainBtn.addEventListener('click', () => startGame());
-
-  if (cancelAutoBtn) cancelAutoBtn.addEventListener('click', () => {
-    if (countdownTimer) {
-      cancelAutoRestart();
-      cancelAutoBtn.textContent = 'Held';
-      cancelAutoBtn.disabled = true;
-      if (countdownEl) countdownEl.textContent = '–';
-    }
-  });
 
   buildBoard();
 })();
